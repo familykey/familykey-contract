@@ -1,0 +1,9 @@
+{
+  "setupHelperAddress": "0x94817C1b13d16b4c707cB842081b98e4B4beCdF5",
+  "factoryAddress": "0x0bA54dD04F80615195c75caa2FD879aeC13F8933",
+  "implementationAddress": "0xAe0E2011D57FFb7Cd95FA7CaD54E8b8Ae319106D",
+  "chainId": 560048,
+  "deployer": "0xFA7e751F6802437553c9880438F1E99A3Ad8240f",
+  "timestamp": 1762261788,
+  "blockNumber": 1553238
+}

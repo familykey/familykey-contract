@@ -4,6 +4,17 @@ out = 'out'
 libs = ['lib']
 solc_version = '0.8.23'
 evm_version = 'cancun'
+remappings = [
+    "@gnosis.pm/safe-contracts/=lib/safe-contracts/",
+    "@openzeppelin/contracts-upgradeable/=lib/openzeppelin-contracts-upgradeable/contracts/",
+]
+fs_permissions = [{ access = "read-write", path = "./deployments" }]
+
+[rpc_endpoints]
+hoodi = "https://ethereum-hoodi-rpc.publicnode.com"
+
+[etherscan]
+hoodi = { key = "${ETHERSCAN_API_KEY}", url = "https://api-hoodi.etherscan.io/api" }
 
 [fmt]
 line_length = 100

@@ -1,0 +1,6 @@
+# Foundry
+lib
+cache
+broadcast
+out/
+*.ds_store

@@ -16,5 +16,23 @@
       "name": "v5.0.0",
       "rev": "932fddf69a699a9a80fd2396fd1a2ab91cdda123"
     }
+  },
+  "lib/openzeppelin-contracts-upgradeable": {
+    "tag": {
+      "name": "v4.9.3",
+      "rev": "3d4c0d5741b131c231e558d7a6213392ab3672a5"
+    }
+  },
+  "lib/safe-contracts": {
+    "tag": {
+      "name": "v1.4.1",
+      "rev": "bf943f80fec5ac647159d26161446ac5d716a294"
+    }
+  },
+  "lib/zodiac": {
+    "tag": {
+      "name": "v3.5.0",
+      "rev": "0fc02ae4a164bb62ad5b3524bf4b48fdb32a0703"
+    }
   }
 }
