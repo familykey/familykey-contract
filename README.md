@@ -88,6 +88,42 @@ graph TD
 
 ---
 
+## 🔬 技术原理
+
+### Safe Module 机制
+
+Safe Module 是一种插件式扩展，可通过 `enableModule()` 赋予合约调用 Safe 的权限。Module 通过 `execTransactionFromModule()` 直接执行交易，无需 Owner 签名，且**绕过 Guard 检查**。
+
+**DeadManSwitchModule 的作用**：
+- 基于 [EIP-2535 (Zodiac Module Standard)](https://eips.ethereum.org/EIPS/eip-2535) 实现
+- 通过 Zodiac ModuleProxyFactory 使用 [EIP-1167 (Minimal Proxy)](https://eips.ethereum.org/EIPS/eip-1167) 部署，节省 Gas
+- 维护心跳状态，自动判断继承条件
+- 在挑战期结束后，通过 Module 权限调用 `swapOwner()` 转移所有权
+
+### Safe Guard 机制
+
+Safe Guard 是交易前置检查器，通过 `setGuard()` 设置。**仅对 Owner 通过 `execTransaction()` 发起的交易生效**，Module 交易不受影响。
+
+**TrustFreezeGuard 的作用**：
+- 实现 Safe 的 `BaseGuard` 接口，在 `checkTransaction()` 中拦截交易
+- 检查当前时间是否在冻结期内，冻结期内拒绝所有 Owner 交易
+- Module 交易直接调用 `execTransactionFromModule()`，完全绕过 Guard，确保继承功能不受影响
+- 实现信托场景：Owner 自愿放弃操作权，但保留 Module 的紧急继承能力
+
+### 受益人身份管理
+
+受益人地址通常通过以下方式生成：
+- **社交账户钱包**：Privy、Particle Network、Web3Auth
+- **Passkey 钱包**：基于 WebAuthn 的无助记词钱包
+- **传统 EOA**：MetaMask、WalletConnect 等
+
+**在 DeadManSwitchModule 中**：
+- `beneficiary` 字段记录受益人的钱包地址（无论生成方式）
+- 仅该地址可调用 `startClaim()` 和 `finalizeClaim()`
+- 支持社交恢复和多设备场景，受益人可用社交账户在任意设备访问
+
+---
+
 ## 🧩 合约模块
 
 ### 核心合约
@@ -282,12 +318,6 @@ forge test --gas-report
 5. **事件日志**：完整的事件记录，便于监控和审计
 6. **Zodiac 兼容**：遵循 Safe 生态标准，可与其他 Zodiac 模块组合
 
-### 风险提示
-
-- ⚠️ **Guard 设置风险**：错误的 Guard 地址可能导致 Safe 永久锁定，请谨慎设置
-- ⚠️ **长期冻结风险**：冻结期内 Owner 无法操作，请合理设置冻结时长
-- ⚠️ **心跳维护**：Owner 需定期签到，否则可能触发继承流程
-- ⚠️ **主网部署**：生产环境使用前务必完成专业审计
 
 ---
 
@@ -297,9 +327,8 @@ forge test --gas-report
 - [x] 信托冻结 Guard 实现与测试
 - [x] 一键部署助手
 - [x] Zodiac 框架集成
-- [ ] 多受益人与比例分配
-- [ ] 自动化心跳服务（链下）
-- [ ] 前端 UI 集成
+- [x] 测试网部署
+- [x] 前端 UI 集成
 - [ ] 第三方安全审计
 - [ ] 主网部署与生产验证
 
@@ -320,14 +349,6 @@ forge test --gas-report
 - [Safe Contracts](https://github.com/safe-global/safe-contracts)
 - [Zodiac Framework](https://github.com/gnosis/zodiac)
 
-### 网络支持
-
-- Ethereum Mainnet
-- Base
-- Optimism
-- Arbitrum
-- Polygon
-- 及其他 EVM 兼容链
 
 ---
 
@@ -346,10 +367,7 @@ forge test --gas-report
 
 ## 📄 许可证
 
-- **DeadManSwitchModule, SafeModuleSetupHelper**: MIT License
-- **TrustFreezeGuard**: LGPL-3.0-only（与 Safe Contracts 保持一致）
-
-详见 [LICENSE](./LICENSE) 文件。
+- **DeadManSwitchModule, SafeModuleSetupHelper, TrustFreezeGuard**: MIT License
 
 ---
 

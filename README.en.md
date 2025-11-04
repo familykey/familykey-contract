@@ -88,6 +88,42 @@ graph TD
 
 ---
 
+## 🔬 Technical Principles
+
+### Safe Module Mechanism
+
+Safe Modules are plugin-style extensions that can be granted permission to invoke Safe operations via `enableModule()`. Modules execute transactions directly through `execTransactionFromModule()` without Owner signatures and **bypass Guard checks**.
+
+**DeadManSwitchModule's Role**:
+- Implements [EIP-2535 (Zodiac Module Standard)](https://eips.ethereum.org/EIPS/eip-2535)
+- Deploys via Zodiac ModuleProxyFactory using [EIP-1167 (Minimal Proxy)](https://eips.ethereum.org/EIPS/eip-1167) for gas efficiency
+- Maintains heartbeat state and automatically evaluates inheritance conditions
+- After challenge period ends, uses Module privileges to call `swapOwner()` for ownership transfer
+
+### Safe Guard Mechanism
+
+Safe Guards are pre-transaction validators set via `setGuard()`. They **only affect Owner-initiated transactions through `execTransaction()`**; Module transactions are unaffected.
+
+**TrustFreezeGuard's Role**:
+- Implements Safe's `BaseGuard` interface, intercepting transactions in `checkTransaction()`
+- Checks if current time is within freeze period, rejecting all Owner transactions during freeze
+- Module transactions call `execTransactionFromModule()` directly, completely bypassing Guard to ensure inheritance functionality
+- Enables trust scenarios: Owner voluntarily relinquishes operational control while maintaining Module's emergency inheritance capability
+
+### Beneficiary Identity Management
+
+Beneficiary addresses are typically generated through:
+- **Social account wallets**: Privy, Particle Network, Web3Auth
+- **Passkey wallets**: WebAuthn-based seedless wallets
+- **Traditional EOAs**: MetaMask, WalletConnect, etc.
+
+**In DeadManSwitchModule**:
+- `beneficiary` field records the beneficiary's wallet address (regardless of generation method)
+- Only this address can call `startClaim()` and `finalizeClaim()`
+- Supports social recovery and multi-device scenarios; beneficiaries can access via social accounts on any device
+
+---
+
 ## 🧩 Contract Modules
 
 ### Core Contracts
@@ -282,12 +318,6 @@ forge test --gas-report
 5. **Event logging**: Complete event records for monitoring and auditing
 6. **Zodiac compatibility**: Adheres to Safe ecosystem standards, composable with other Zodiac modules
 
-### Risk Warnings
-
-- ⚠️ **Guard configuration risk**: Incorrect Guard address may permanently lock Safe, configure carefully
-- ⚠️ **Long-term freeze risk**: Owner cannot operate during freeze period, set duration reasonably
-- ⚠️ **Heartbeat maintenance**: Owner must check in regularly or risk triggering inheritance flow
-- ⚠️ **Mainnet deployment**: Complete professional audit before production use
 
 ---
 
@@ -297,10 +327,6 @@ forge test --gas-report
 - [x] Trust freeze Guard implementation and testing
 - [x] One-click deployment helper
 - [x] Zodiac framework integration
-- [ ] Multi-beneficiary and proportional distribution
-- [ ] Automated heartbeat service (off-chain)
-- [ ] Frontend UI integration
-- [ ] Third-party security audit
 - [ ] Mainnet deployment and production validation
 
 ---
@@ -320,14 +346,7 @@ forge test --gas-report
 - [Safe Contracts](https://github.com/safe-global/safe-contracts)
 - [Zodiac Framework](https://github.com/gnosis/zodiac)
 
-### Network Support
 
-- Ethereum Mainnet
-- Base
-- Optimism
-- Arbitrum
-- Polygon
-- Other EVM-compatible chains
 
 ---
 
@@ -346,10 +365,8 @@ We welcome issues, pull requests, and audit feedback:
 
 ## 📄 License
 
-- **DeadManSwitchModule, SafeModuleSetupHelper**: MIT License
-- **TrustFreezeGuard**: LGPL-3.0-only (consistent with Safe Contracts)
+- **DeadManSwitchModule, SafeModuleSetupHelpe, TrustFreezeGuardr**: MIT License
 
-See [LICENSE](./LICENSE) file for details.
 
 ---
 
